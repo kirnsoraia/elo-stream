@@ -21,10 +21,13 @@ async function getFaceit() {
   );
   const data = await res.json();
 
-  return {
-    level: data.games.cs2.skill_level,
-    elo: data.games.cs2.faceit_elo,
-  };
+const game = data.games?.cs2 || data.games?.csgo;
+
+return {
+  level: game?.skill_level ?? "N/A",
+  elo: game?.faceit_elo ?? "N/A",
+};
+
 }
 
 // ===== PREMIER =====
