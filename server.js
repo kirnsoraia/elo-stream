@@ -16,14 +16,26 @@ let ultimaAtualizacao = new Date().getDate();
 
 async function getFaceitData() {
     try {
-        const res = await fetch(`https://open.faceit.com/data/v4/players?nickname=${FACEIT_NICK}`, {
-            headers: { Authorization: `Bearer ${FACEIT_API_KEY}` }
+        const url = `https://open.faceit.com/data/v4/players?nickname=${FACEIT_NICK}`;
+        console.log(`Buscando Faceit: ${url}`); // Isso aparecerá nos Logs do Render
+        
+        const res = await fetch(url, {
+            headers: { 
+                'Authorization': `Bearer ${FACEIT_API_KEY}`,
+                'Accept': 'application/json'
+            }
         });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`Erro API Faceit (${res.status}): ${errorText}`);
+            return { lvl: 0, elo: 0, ganhoHoje: "0" };
+        }
+
         const data = await res.json();
         const elo = data.games?.cs2?.faceit_elo || data.games?.csgo?.faceit_elo || 0;
         const lvl = data.games?.cs2?.skill_level || data.games?.csgo?.skill_level || 0;
 
-        // Lógica para resetar o elo diário à meia-noite
         const hoje = new Date().getDate();
         if (eloAoIniciar === null || hoje !== ultimaAtualizacao) {
             eloAoIniciar = elo;
@@ -31,11 +43,10 @@ async function getFaceitData() {
         }
 
         const ganhoHoje = elo - eloAoIniciar;
-        const ganhoFormatado = ganhoHoje >= 0 ? `+${ganhoHoje}` : ganhoHoje;
-
-        return { lvl, elo, ganhoHoje: ganhoFormatado };
+        return { lvl, elo, ganhoHoje: ganhoHoje >= 0 ? `+${ganhoHoje}` : ganhoHoje };
     } catch (e) {
-        return { lvl: "N/A", elo: "N/A", ganhoHoje: "0" };
+        console.error("Erro interno Faceit:", e);
+        return { lvl: 0, elo: 0, ganhoHoje: "0" };
     }
 }
 
