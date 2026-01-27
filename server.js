@@ -16,25 +16,18 @@ let ultimaAtualizacao = new Date().getDate();
 
 async function getFaceitData() {
     try {
-        const url = `https://open.faceit.com/data/v4/players?nickname=${FACEIT_NICK}`;
-        console.log(`Buscando Faceit: ${url}`); // Isso aparecerá nos Logs do Render
-        
-        const res = await fetch(url, {
-            headers: { 
-                'Authorization': `Bearer ${FACEIT_API_KEY}`,
-                'Accept': 'application/json'
-            }
+        const res = await fetch(`https://open.faceit.com/data/v4/players?nickname=${FACEIT_NICK}`, {
+            headers: { 'Authorization': `Bearer ${process.env.FACEIT_API_KEY}` }
         });
-
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error(`Erro API Faceit (${res.status}): ${errorText}`);
-            return { lvl: 0, elo: 0, ganhoHoje: "0" };
-        }
-
         const data = await res.json();
-        const elo = data.games?.cs2?.faceit_elo || data.games?.csgo?.faceit_elo || 0;
-        const lvl = data.games?.cs2?.skill_level || data.games?.csgo?.skill_level || 0;
+        
+        // Tenta pegar dados do CS2, se não houver, tenta CSGO
+        const game = data.games?.cs2 || data.games?.csgo;
+        
+        if (!game) return { lvl: 0, elo: 0, ganhoHoje: "0" };
+
+        const elo = game.faceit_elo || 0;
+        const lvl = game.skill_level || 0;
 
         const hoje = new Date().getDate();
         if (eloAoIniciar === null || hoje !== ultimaAtualizacao) {
@@ -42,14 +35,12 @@ async function getFaceitData() {
             ultimaAtualizacao = hoje;
         }
 
-        const ganhoHoje = elo - eloAoIniciar;
-        return { lvl, elo, ganhoHoje: ganhoHoje >= 0 ? `+${ganhoHoje}` : ganhoHoje };
+        const dif = elo - eloAoIniciar;
+        return { lvl, elo, ganhoHoje: dif >= 0 ? `+${dif}` : dif };
     } catch (e) {
-        console.error("Erro interno Faceit:", e);
-        return { lvl: 0, elo: 0, ganhoHoje: "0" };
+        return { lvl: "Erro", elo: 0, ganhoHoje: "0" };
     }
 }
-
 async function getPremierData() {
     try {
         // A API da Steam para Premier costuma ser instável. 
