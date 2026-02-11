@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 // Configurações (Use variáveis de ambiente no Render para segurança)
 const FACEIT_API_KEY = process.env.FACEIT_API_KEY;
 const FACEIT_ID = "33681498-8f83-4903-8884-2a945f782c5f"; // Recomendo usar o ID interno da Faceit
-const FACEIT_NICK = "Kirn0bs";
+const FACEIT_NICK = "kirnobz";
 const STEAM_ID_64 = "76561198953388206";
 
 // Variáveis para o cálculo de "Hoje"
